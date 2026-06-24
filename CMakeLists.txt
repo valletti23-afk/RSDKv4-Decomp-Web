@@ -193,7 +193,17 @@ target_compile_definitions(RetroEngine PRIVATE
     RETRO_USE_ORIGINAL_CODE=$<BOOL:${RETRO_ORIGINAL_CODE}>
     
     RSDK_AUTOBUILD=$<BOOL:${RETRO_DISABLE_PLUS}>
-    
+    if(EMSCRIPTEN)
+    set(CMAKE_EXECUTABLE_SUFFIX ".js")
+    target_link_options(RSDKv4 PRIVATE 
+        "-sWASM=1" 
+        "-sUSE_SDL=2" 
+        "-sUSE_SDL_MIXER=2" 
+        "-sALLOW_MEMORY_GROWTH=1"
+        "-sEXPORTED_FUNCTIONS=['_main','_FS']"
+        "-sFORCE_FILESYSTEM=1"
+    )
+endif()
     RETRO_DEV_EXTRA="${PLATFORM} - ${CMAKE_CXX_COMPILER_ID}"
     DECOMP_VERSION="${DECOMP_VERSION}"
 )
