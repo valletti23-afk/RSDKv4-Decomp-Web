@@ -1,0 +1,32 @@
+name: Cloud-Compiler-RSDK-Websim
+
+on:
+  workflow_dispatch: # Avvio manuale tramite pulsante
+
+jobs:
+  crea-pacchetto-wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scarica sorgenti
+        uses: actions/checkout@v4
+
+      - name: Attiva Emscripten nel Cloud
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: '3.1.64'
+
+      - name: Installa Librerie SDL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsdl2-dev libsdl2-mixer-dev
+
+      - name: Compilazione Motore RetroEngine
+        run: |
+          mkdir -p output-websim
+          emcc $(find RSDKv4 -name "*.cpp" -o -name "*.c") -O3 -s WASM=1 -s USE_SDL=2 -s USE_SDL_MIXER=2 -s ALLOW_MEMORY_GROWTH=1 -o output-websim/RSDKv4.js
+
+      - name: Genera File Scaricabile
+        uses: actions/upload-artifact@v4
+        with:
+          name: pacchetto-compilato-websim
+          path: output-websim/
