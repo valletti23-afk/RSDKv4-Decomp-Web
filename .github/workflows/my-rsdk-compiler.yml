@@ -1,0 +1,39 @@
+name: Il Mio Compilatore RSDKv4 Web
+
+on:
+  workflow_dispatch: # Ti permette di premere il pulsante manuale
+
+jobs:
+  compila-da-zero:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scarica Codice Sorgente
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Attiva Emscripten SDK nel Cloud
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: '3.1.64'
+
+      - name: Installa Librerie di Sviluppo Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libsdl2-dev libsdl2-mixer-dev libvorbis-dev libogg-dev libtheora-dev
+
+      - name: Genera i file WebAssembly
+        run: |
+          mkdir build_web
+          cd build_web
+          # emcmake e emmake sono i comandi di Emscripten che creano i file .js e .wasm
+          emcmake cmake .. -DCMAKE_BUILD_TYPE=Release -DRETRO_FORCE_SDL2=ON
+          emmake make RSDKv4
+          
+      - name: Salva i Miei File per Websim
+        uses: actions/upload-artifact@v4
+        with:
+          name: i-miei-file-rsdk
+          path: |
+            build_web/RSDKv4.js
+            build_web/RSDKv4.wasm
