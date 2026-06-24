@@ -1,0 +1,39 @@
+name: Compilatore WebAssembly Automatico
+
+on:
+  workflow_dispatch: # Abilita il pulsante manuale
+
+jobs:
+  build-wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scarica Codice (Submodules Inclusi)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive # Fondamentale per i componenti di RSDKModding
+
+      - name: Configura Emscripten SDK
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: '3.1.64'
+
+      - name: Installa Pacchetti Multimediali Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libsdl2-dev libvorbis-dev libogg-dev libtheora-dev libglew-dev
+
+      - name: Compilazione con CMake ed Emscripten
+        run: |
+          mkdir build_wasm
+          cd build_wasm
+          # Usa i wrapper Emscripten per configurare CMake con le librerie web incluse
+          emcmake cmake .. -DCMAKE_BUILD_TYPE=Release -DRETRO_FORCE_SDL2=ON
+          emmake make
+          
+      - name: Archivia File per Websim
+        uses: actions/upload-artifact@v4
+        with:
+          name: binari-rsdk-websim
+          path: |
+            build_wasm/RSDKv4.js
+            build_wasm/RSDKv4.wasm
