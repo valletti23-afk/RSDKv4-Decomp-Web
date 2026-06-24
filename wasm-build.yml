@@ -1,0 +1,34 @@
+name: Build WebAssembly (Web Port)
+
+on:
+  workflow_dispatch: # Ti permette di avviarlo manualmente con un click
+
+jobs:
+  build-wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 'latest'
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsdl2-dev libsdl2-mixer-dev
+
+      - name: Compile to WASM
+        run: |
+          emcc src/main.cpp -O3 -s WASM=1 -s USE_SDL=2 -s USE_SDL_MIXER=2 -s ALLOW_MEMORY_GROWTH=1 -o RSDKv4.js
+          # Nota: emcc collegherà i file sorgenti (.cpp) della repo di RSDKModding
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rsdkv4-web-port
+          path: |
+            RSDKv4.js
+            RSDKv4.wasm
